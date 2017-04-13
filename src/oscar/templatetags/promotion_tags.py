@@ -12,7 +12,7 @@ class PromotionNode(Node):
         promotion = self.promotion_var.resolve(context)
         template = select_template([promotion.template_name(),
                                     'promotions/default.html'])
-        args = {'promotion': promotion}
+        args = {'promotion': promotion, 'request': context['request']}
         args.update(**promotion.template_context(request=context['request']))
         ctx = RequestContext(context['request'], args)
         return template.render(ctx)
