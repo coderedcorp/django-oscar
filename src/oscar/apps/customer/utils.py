@@ -87,19 +87,25 @@ class Dispatcher(object):
             from_email = settings.OSCAR_FROM_EMAIL
         else:
             from_email = None
+        if hasattr(settings, 'OSCAR_REPLY_EMAIL'):
+            reply_to = settings.OSCAR_REPLY_EMAIL
+        else:
+            reply_to = from_email
 
         # Determine whether we are sending a HTML version too
         if messages['html']:
             email = EmailMultiAlternatives(messages['subject'],
                                            messages['body'],
                                            from_email=from_email,
-                                           to=[recipient])
+                                           to=[recipient],
+                                           reply_to=reply_to)
             email.attach_alternative(messages['html'], "text/html")
         else:
             email = EmailMessage(messages['subject'],
                                  messages['body'],
                                  from_email=from_email,
-                                 to=[recipient])
+                                 to=[recipient],
+                                 reply_to=reply_to)
         self.logger.info("Sending email to %s" % recipient)
         email.send()
 
