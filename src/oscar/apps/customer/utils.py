@@ -50,13 +50,13 @@ class Dispatcher(object):
             dispatched_messages['email'] = self.send_email_messages(email, messages), None
         return dispatched_messages
 
-    def dispatch_user_messages(self, user, messages):
+    def dispatch_user_messages(self, user, messages, cc=None, bcc=None):
         """
         Send messages to a site user
         """
         dispatched_messages = {}
         if messages['subject'] and (messages['body'] or messages['html']):
-            dispatched_messages['email'] = self.send_user_email_messages(user, messages)
+            dispatched_messages['email'] = self.send_user_email_messages(user, messages, cc=cc, bcc=bcc)
         if messages['sms']:
             dispatched_messages['sms'] = self.send_text_message(user, messages['sms'])
         return dispatched_messages
@@ -82,7 +82,7 @@ class Dispatcher(object):
                                                  body_text=email.body,
                                                  body_html=messages['html'])
 
-    def send_user_email_messages(self, user, messages):
+    def send_user_email_messages(self, user, messages, cc=None, bcc=None):
         """
         Send message to the registered user / customer and collect data in database.
         """
@@ -91,10 +91,10 @@ class Dispatcher(object):
                                 " no email address", user.id)
             return None, None
 
-        email = self.send_email_messages(user.email, messages)
+        email = self.send_email_messages(user.email, messages, cc=cc, bcc=bcc)
         return email, self.create_customer_email(user, messages, email)
 
-    def send_email_messages(self, recipient, messages):
+    def send_email_messages(self, recipient, messages, cc=None, bcc=None):
         """
         Send email to recipient, HTML attachment optional.
         """
@@ -113,14 +113,18 @@ class Dispatcher(object):
                                            messages['body'],
                                            from_email=from_email,
                                            to=[recipient],
-                                           reply_to=reply_to)
+                                           reply_to=reply_to,
+                                           cc=cc,
+                                           bcc=bcc)
             email.attach_alternative(messages['html'], "text/html")
         else:
             email = EmailMessage(messages['subject'],
                                  messages['body'],
                                  from_email=from_email,
                                  to=[recipient],
-                                 reply_to=reply_to)
+                                 reply_to=reply_to,
+                                 cc=cc,
+                                 bcc=bcc)
         self.logger.info("Sending email to %s" % recipient)
 
         if self.mail_connection:
