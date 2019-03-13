@@ -19,7 +19,7 @@ sys.path.append(os.path.join(PROJECT_DIR, 'src'))
 from oscar import get_version  # noqa isort:skip
 
 install_requires = [
-    'django>=1.11,<2.1',
+    'django>=1.11,<2.2',
     # PIL is required for image fields, Pillow is the "friendly" PIL fork
     'pillow>=4.0',
     # We use the ModelFormSetView from django-extra-views for the basket page
@@ -63,7 +63,7 @@ test_requires = [
     'django-webtest==1.9.2',
     'py>=1.4.31',
     'psycopg2>=2.7,<2.8',
-    'pytest>=3.5,<3.6',
+    'pytest>=3.6,<3.7',
     'pytest-cov==2.5.1',
     'pytest-django==3.1.2',
     'pytest-xdist>=1.22<1.23',
@@ -99,6 +99,7 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: 1.11',
         'Framework :: Django :: 2.0',
+        'Framework :: Django :: 2.1',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',
         'Operating System :: Unix',
