@@ -41,9 +41,15 @@ class ProductDetailView(DetailView):
         if redirect is not None:
             return redirect
 
+        if not self.is_viewable(product, request):
+            raise Http404()
+
         response = super(ProductDetailView, self).get(request, **kwargs)
         self.send_signal(request, response, product)
         return response
+
+    def is_viewable(self, product, request):
+        return product.is_public or request.user.is_staff
 
     def get_object(self, queryset=None):
         # Check if self.object is already set to prevent unnecessary DB calls
