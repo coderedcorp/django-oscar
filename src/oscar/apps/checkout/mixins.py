@@ -20,6 +20,8 @@ PaymentEvent = get_model('order', 'PaymentEvent')
 PaymentEventQuantity = get_model('order', 'PaymentEventQuantity')
 UserAddress = get_model('address', 'UserAddress')
 Basket = get_model('basket', 'Basket')
+Line = get_model('basket', 'Line')
+Order = get_model('order', 'Order')
 CommunicationEventType = get_model('customer', 'CommunicationEventType')
 UnableToPlaceOrder = get_class('order.exceptions', 'UnableToPlaceOrder')
 
@@ -93,8 +95,35 @@ class OrderPlacementMixin(CheckoutSessionMixin):
     def generate_order_number(self, basket):
         """
         Return a new order number
+        CodeRed Comment: We are overwriting this function to check and make sure
+        there isn't an already existing order with the generated order number.
+        For an unknown reason, this has been shown to be possible, but unlikely.  
+        If there is an existing order with the order number, remake the basket
+        and make the order number from the new basket.
         """
-        return OrderNumberGenerator().order_number(basket)
+        order_number = OrderNumberGenerator().order_number(basket)
+        if Order._default_manager.filter(number=order_number).exists():
+            new_basket = Basket(
+                owner=basket.owner,
+                status=basket.status,
+                date_merged=basket.date_merged,
+                date_submitted=basket.date_submitted,
+                is_taxable=basket.is_taxable,
+                )
+            new_basket.strategy = basket.strategy
+            new_basket.save()
+
+            for line in basket.lines.all():
+                line.basket = new_basket
+                line.save()
+
+            new_basket.vouchers = basket.vouchers.all()
+
+            self.request.basket = new_basket
+            basket.delete()
+            order_number = OrderNumberGenerator().order_number(new_basket)
+            basket = new_basket
+        return order_number, basket
 
     def handle_order_placement(self, order_number, user, basket,
                                shipping_address, shipping_method,
