@@ -6,9 +6,11 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponseRedirect
 from django.urls import NoReverseMatch, reverse
 
+from oscar.apps.basket.signals import voucher_addition
 from oscar.apps.checkout.signals import post_checkout
 from oscar.core.loading import get_class, get_model
 
+Applicator = get_class('offer.applicator', 'Applicator')
 OrderCreator = get_class('order.utils', 'OrderCreator')
 Dispatcher = get_class('customer.utils', 'Dispatcher')
 CheckoutSessionMixin = get_class('checkout.session', 'CheckoutSessionMixin')
@@ -117,7 +119,12 @@ class OrderPlacementMixin(CheckoutSessionMixin):
                 line.basket = new_basket
                 line.save()
 
-            new_basket.vouchers = basket.vouchers.all()
+            for voucher in basket.vouchers.all():
+                new_basket.vouchers.add(voucher)
+                voucher_addition.send(sender=self, basket=new_basket, voucher=voucher)
+                Applicator().apply(new_basket, self.request.user,
+                                   self.request)
+
 
             self.request.basket = new_basket
             basket.delete()
