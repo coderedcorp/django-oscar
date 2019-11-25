@@ -20,7 +20,10 @@ class BasketLineForm(forms.ModelForm):
         self.instance.strategy = strategy
 
         max_allowed_quantity = None
-        num_available = getattr(self.instance.purchase_info.availability, 'num_available', None)
+        try:
+            num_available = getattr(self.instance.purchase_info.availability, 'num_available', None)
+        except:
+            num_available = None
         basket_max_allowed_quantity = self.instance.basket.max_allowed_quantity()[0]
         if all([num_available, basket_max_allowed_quantity]):
             max_allowed_quantity = min(num_available, basket_max_allowed_quantity)

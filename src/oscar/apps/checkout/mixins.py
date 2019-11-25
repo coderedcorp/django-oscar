@@ -99,7 +99,7 @@ class OrderPlacementMixin(CheckoutSessionMixin):
         Return a new order number
         CodeRed Comment: We are overwriting this function to check and make sure
         there isn't an already existing order with the generated order number.
-        For an unknown reason, this has been shown to be possible, but unlikely.  
+        For an unknown reason, this has been shown to be possible, but unlikely.
         If there is an existing order with the order number, remake the basket
         and make the order number from the new basket.
         """
@@ -121,10 +121,10 @@ class OrderPlacementMixin(CheckoutSessionMixin):
 
             for voucher in basket.vouchers.all():
                 new_basket.vouchers.add(voucher)
-                voucher_addition.send(sender=self, basket=new_basket, voucher=voucher)
+                voucher_addition.send(sender=self, basket=new_basket,
+                                      voucher=voucher)
                 Applicator().apply(new_basket, self.request.user,
                                    self.request)
-
 
             self.request.basket = new_basket
             basket.delete()
